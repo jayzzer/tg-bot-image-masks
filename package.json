@@ -1,0 +1,23 @@
+{
+  "name": "telegram-mask-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot that applies masks to user images",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "grammy": "^1.19.2",
+    "@grammyjs/conversations": "^1.1.2",
+    "sharp": "^0.33.2",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
