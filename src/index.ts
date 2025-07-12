@@ -51,11 +51,13 @@ bot.use(conversations());
 // Define the main conversation flow
 async function imageMaskConversation(conversation: any, ctx: MyContext) {
   // Step 1: Wait for user to upload an image
-  await ctx.reply("Please send me an image to apply a mask.");
+  await ctx.reply(
+    "Отправьте мне фотографию, и я сделаю для вас картинку для поста или сторис."
+  );
 
   const imageMsg = await conversation.wait();
   if (!imageMsg.message?.photo) {
-    await ctx.reply("That's not an image. Please send an image.");
+    await ctx.reply("Это не изображение. Пожалуйста, пришлите изображение.");
     return;
   }
 
@@ -64,7 +66,7 @@ async function imageMaskConversation(conversation: any, ctx: MyContext) {
   const fileId = photo.file_id;
 
   // Download the image
-  await ctx.reply("Downloading your image...");
+  await ctx.reply("Загружаю ваше изображение...");
   const file = await ctx.api.getFile(fileId);
   const fileUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file.file_path}`;
 
@@ -81,19 +83,26 @@ async function imageMaskConversation(conversation: any, ctx: MyContext) {
   conversation.session.imagePath = imagePath;
 
   // Step 2: Ask for output format
-  await ctx.reply("Please select the output format:", {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: "📱 Stories (1080x1920)", callback_data: "format_stories" },
-          {
-            text: "⬜ Square Post (1080x1080)",
-            callback_data: "format_square",
-          },
+  await ctx.reply(
+    "Выберите размер изображения.\n" +
+      "Вертикальная картинка отлично подойдет для сторис, а квадратная — для поста в соцсетях.:",
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "📱 Вертикальная картинка для сторис (1080x1920)",
+              callback_data: "format_stories",
+            },
+            {
+              text: "⬜ Квадрат для поста (1080x1080)",
+              callback_data: "format_square",
+            },
+          ],
         ],
-      ],
-    },
-  });
+      },
+    }
+  );
 
   // Wait for format selection
   const formatSelection = await conversation.waitFor("callback_query:data");
@@ -112,8 +121,10 @@ async function imageMaskConversation(conversation: any, ctx: MyContext) {
 
   // Acknowledge the format selection
   await formatSelection.answerCallbackQuery({
-    text: `You selected ${
-      formatType === "stories" ? "Stories format" : "Square format"
+    text: `Вы выбрали формат: ${
+      formatType === "stories"
+        ? "Вертикальная картинка для сторис (1080x1920)"
+        : "Квадрат для поста (1080x1080)"
     }`,
   });
 
@@ -123,7 +134,7 @@ async function imageMaskConversation(conversation: any, ctx: MyContext) {
 
   // Step 3: Process the image and send it back
   await ctx.reply(
-    `Processing your image with ${selectedMask.name} in ${formatType} format...`
+    `Создаем изображение, буквально пару секунд...`
   );
 
   try {
@@ -137,12 +148,12 @@ async function imageMaskConversation(conversation: any, ctx: MyContext) {
 
     // Send the processed image
     await ctx.replyWithPhoto(new InputFile(outputPath), {
-      caption: `Your ${formatType} applied! 🎭\n\nFormat: ${selectedFormat.width}x${selectedFormat.height}`,
+      caption: `Готово! Вот ваше изображение.`,
     });
 
     // Clean up
     await ctx.reply(
-      "Would you like to try again? Just send a new image or type /start to begin again."
+      "Нажмите /start, чтобы отправить другое фото или изменить формат картинки."
     );
 
     // Clean up temp files
@@ -167,45 +178,31 @@ bot.use(createConversation(imageMaskConversation, "image-mask-conversation"));
 // Command handlers
 bot.command("start", async (ctx) => {
   await ctx.reply(
-    "Welcome to the Image Mask Bot! 🎭\n\n" +
-      "I can apply fun masks to your photos and format them for:\n" +
-      "📱 Instagram Stories (1080x1920)\n" +
-      "⬜ Square Posts (1080x1080)\n\n" +
-      "Let's get started!"
+    "Привет! Я бот, который поможет рассказать, что вы участвуете в проекте «Вкусы России»."
   );
   await ctx.conversation.enter("image-mask-conversation");
 });
 
 bot.command("help", async (ctx) => {
   await ctx.reply(
-    "This bot allows you to apply fun masks to your images! 🎭\n\n" +
-      "Features:\n" +
-      "• Apply masks to your photos\n" +
-      "• Format for Instagram Stories (1080x1920)\n" +
-      "• Format for Square Posts (1080x1080)\n" +
-      "• Masks are positioned at the bottom\n" +
-      "• Images are center-cropped to fit\n\n" +
-      "Available masks:\n" +
-      "🕶️ Sunglasses\n" +
-      "🎉 Party Hat\n" +
-      "👑 Crown\n" +
-      "👨 Mustache\n" +
-      "🧔 Beard\n" +
-      "🦋 Butterfly\n\n" +
-      "Commands:\n" +
-      "/start - Start the process\n" +
-      "/help - Show this help message"
+    "Как использовать этого бота:\n" +
+      "1. Нажмите /start и отправьте фото\n" +
+      "2. Выберите размер изображения из предложенных вариантов\n" +
+      "3. Получите готовую картинку для поста или сторис\n\n" +
+      "Поддерживаемые форматы: JPG, PNG, WEBP, HEIC и другие"
   );
 });
 
 bot.api.setMyCommands([
-  { command: "start", description: "Start the bot" },
-  { command: "help", description: "Show help text" },
+  { command: "start", description: "запустить бот" },
+  { command: "help", description: "узнать, как пользоваться ботом" },
 ]);
 
 // Handle any photo sent outside of conversation
 bot.on("message:photo", async (ctx) => {
-  await ctx.reply("Please use /start to begin the mask application process!");
+  await ctx.reply(
+    "Сначала необходимо вызвать команду /start для начала работы"
+  );
 });
 
 // Error handling
