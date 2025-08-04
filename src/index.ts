@@ -128,14 +128,12 @@ async function imageMaskConversation(conversation: any, ctx: MyContext) {
     }`,
   });
 
-  const selectedMask = masks[0];
+  const selectedMask = masks.find(({ id }) => id === formatType) ?? masks[0];
 
   conversation.session.selectedMask = selectedMask;
 
   // Step 3: Process the image and send it back
-  await ctx.reply(
-    `Создаем изображение, буквально пару секунд...`
-  );
+  await ctx.reply(`Создаем изображение, буквально пару секунд...`);
 
   try {
     const outputPath = path.join(tempDir, "result.jpg");
