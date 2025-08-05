@@ -52,7 +52,7 @@ bot.use(conversations());
 async function imageMaskConversation(conversation: any, ctx: MyContext) {
   // Step 1: Wait for user to upload an image
   await ctx.reply(
-    "Отправьте мне фотографию, и я сделаю для вас картинку для поста или сторис."
+    "Отправьте мне фотографию, и я сделаю для вас картинку для поста или сторис ⬇️"
   );
 
   const imageMsg = await conversation.wait();
@@ -84,18 +84,17 @@ async function imageMaskConversation(conversation: any, ctx: MyContext) {
 
   // Step 2: Ask for output format
   await ctx.reply(
-    "Выберите размер изображения.\n" +
-      "Вертикальная картинка отлично подойдет для сторис, а квадратная — для поста в соцсетях.:",
+    "Выберите формат изображения. Вертикальная картинка отлично подойдет для сторис, а квадратная — для поста в соцсетях.",
     {
       reply_markup: {
         inline_keyboard: [
           [
             {
-              text: "📱 Вертикальная картинка для сторис (1080x1920)",
+              text: "Сторис 9х16",
               callback_data: "format_stories",
             },
             {
-              text: "⬜ Квадрат для поста (1080x1080)",
+              text: "Пост 1х1",
               callback_data: "format_square",
             },
           ],
@@ -123,8 +122,8 @@ async function imageMaskConversation(conversation: any, ctx: MyContext) {
   await formatSelection.answerCallbackQuery({
     text: `Вы выбрали формат: ${
       formatType === "stories"
-        ? "Вертикальная картинка для сторис (1080x1920)"
-        : "Квадрат для поста (1080x1080)"
+        ? "Сторис 9х16"
+        : "Пост 1х1"
     }`,
   });
 
@@ -146,13 +145,8 @@ async function imageMaskConversation(conversation: any, ctx: MyContext) {
 
     // Send the processed image
     await ctx.replyWithPhoto(new InputFile(outputPath), {
-      caption: `Готово! Вот ваше изображение.`,
+      caption: `Готово! 🥳 Нажмите /start, чтобы отправить другое фото или изменить формат картинки.`,
     });
-
-    // Clean up
-    await ctx.reply(
-      "Нажмите /start, чтобы отправить другое фото или изменить формат картинки."
-    );
 
     // Clean up temp files
     try {
@@ -165,7 +159,7 @@ async function imageMaskConversation(conversation: any, ctx: MyContext) {
   } catch (error) {
     console.error("Error processing image:", error);
     await ctx.reply(
-      "Sorry, there was an error processing your image. Please try again."
+      "Извините, произошла ошибка при обработке вашего изображения. Попробуйте снова."
     );
   }
 }
@@ -175,9 +169,6 @@ bot.use(createConversation(imageMaskConversation, "image-mask-conversation"));
 
 // Command handlers
 bot.command("start", async (ctx) => {
-  await ctx.reply(
-    "Привет! Я бот, который поможет рассказать, что вы участвуете в проекте «Вкусы России»."
-  );
   await ctx.conversation.enter("image-mask-conversation");
 });
 
